@@ -4,7 +4,7 @@
 
 #ifndef C_3D_RENDERING_ENGINE_OBJECT_H
 #define C_3D_RENDERING_ENGINE_OBJECT_H
-#include "engine/matrix4x4/matrix4x4.h"
+#include "engine/core/matrix4x4/matrix4x4.h"
 #include "engine/vertex/vertex.h"
 #include "glad/glad.h"
 

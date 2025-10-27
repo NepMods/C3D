@@ -8,29 +8,6 @@
 #include "math.h"
 #include "engine/helper/helper.h"
 
-void rotateTriangle(void *object_ptr, double time) {
-
-    Object *object = (Object *)object_ptr;
-
-    float x0 = 0.0f, y0 = 0.4f;
-    float x1 = -0.2f, y1 = -0.2f;
-    float x2 = 0.2f, y2 = -0.2f;
-
-    double angle = time * 0.25f;
-    float c = (float)cos(angle);
-    float s = (float)sin(angle);
-
-    object->vertices[0].position.x = x0 * c - y0 * s;
-    object->vertices[0].position.y = x0 * s + y0 * c;
-
-    object->vertices[1].position.x = x1 * c - y1 * s;
-    object->vertices[1].position.y = x1 * s + y1 * c;
-
-    object->vertices[2].position.x = x2 * c - y2 * s;
-    object->vertices[2].position.y = x2 * s + y2 * c;
-
-}
-
 Object *get_triangle_object_filled(Triangle t, vec3 *c, int colors) {
     Object *triangle = initialize_object();
 

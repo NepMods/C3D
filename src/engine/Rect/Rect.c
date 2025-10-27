@@ -16,7 +16,7 @@ Mesh* get_rect_mesh(Rect* r, vec3 *colors, int num_colors) {
     Mesh* rect = initialize_mesh();
     Object *side1 = get_triangle_object_filled(r->s1, colors, num_colors);
     Object *side2 = get_triangle_object_filled(r->s2, colors, num_colors);
-    add_object(rect, side1);
-    add_object(rect, side2);
+    // add_object(rect, side1);
+    // add_object(rect, side2);
     return rect;
 }

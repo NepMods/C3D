@@ -39,7 +39,7 @@ void remove_mesh(Scene *scene, Mesh *mesh) {
     }
 
    scene->totalObjects--;
-    if (mesh->num_objects > 0) {
+    if (mesh->num_indexes > 0) {
         scene->objects = realloc(scene->objects, sizeof(Object) *scene->totalObjects);
     } else {
         free(scene->objects);

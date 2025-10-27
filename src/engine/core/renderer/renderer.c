@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <math.h>
 
+#include "engine/core/Camera/Camera.h"
 #include "engine/helper/helper.h"
 #include "engine/object/object.h"
 
@@ -18,6 +19,25 @@ static void error_callback(int error, const char* description) {
 
 static void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height);
+}
+
+int width = 800;
+int height = 800;
+char *title = "C3D";
+Renderer *main_renderer;
+
+void setRendererWindowData(int height_p, int width_p, char *title_p) {
+    width = width_p;
+    height = height_p;
+    title = title_p;
+}
+Renderer *get_main_renderer() {
+    if (main_renderer) {
+        return main_renderer;
+    }
+
+    main_renderer = init_renderer(height, width, "Hello World");
+    return main_renderer;
 }
 
 Renderer *__create_renderer() {
@@ -120,12 +140,16 @@ Renderer *init_renderer(int height, int width, char *title) {
     return  r;
 }
 
+int print = 0;
 
 void renderer_polling(Renderer *r) {
     while (!glfwWindowShouldClose(r->window)) {
         glfwPollEvents();
         if (glfwGetKey(r->window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
             glfwSetWindowShouldClose(r->window, 1);
+
+        Camera *camera = get_main();
+        camera_update(camera);
 
         glClearColor(0.1f,0.12f,0.15f,1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
@@ -138,23 +162,53 @@ void renderer_polling(Renderer *r) {
         r->currentTime = time;
         r->deltaTime = deltaTime;
         glUseProgram(r->shaderProgram);
+        r->modelLoc = glGetUniformLocation(r->shaderProgram, "model");
+        r->viewLoc = glGetUniformLocation(r->shaderProgram, "view");
+        r->projLoc = glGetUniformLocation(r->shaderProgram, "projection");
         glBindVertexArray(r->VAO);
         glBindBuffer(GL_ARRAY_BUFFER, r->VBO);
 
+
+
+        glUniformMatrix4fv(r->viewLoc, 1, GL_TRUE, (float *)camera->view.a);
+        glUniformMatrix4fv(r->projLoc, 1, GL_TRUE, (float *)camera->projection.a);
+        if (!print) {
+            printf("View Matrix: \n");
+            printMatrix4x4(camera->view);
+
+            printf("Projection Matrix: \n");
+            printMatrix4x4(camera->projection);
+        }
         for (int i = 0; i < r->currentScene->totalObjects; i++) {
             Mesh *curMesh =  r->currentScene->objects[i];
-            curMesh->update(curMesh, r->deltaTime);;
-            for (int i = 0; i < curMesh->num_objects; i ++) {
-                Object *obj = curMesh->objects[i];
-                matrix4x4 projectionMatrix = get_projection_matrix(r->height, r->width, 90.0f, 1000.0f, 0.1f);
-                VertexArray new_vertex = get_vertex_screen(obj, projectionMatrix, r->height, r->width);
-                if (new_vertex.rendered) {
-                    // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-                    glBufferSubData(GL_ARRAY_BUFFER, 0, obj->total_vertices * sizeof(Vertex), new_vertex.vertex);
-                    glDrawArrays(GL_TRIANGLES, 0, obj->total_vertices);
-                }
-                free(new_vertex.vertex);
+            curMesh->update(curMesh, r->deltaTime);
+
+            glClear(GL_COLOR_BUFFER_BIT);
+            glBindVertexArray(curMesh->VAO);
+
+            glUniformMatrix4fv(r->modelLoc, 1, GL_TRUE, (float *)curMesh->transform->model.a);
+            if (!print) {
+
+                printf("Model Matrix: \n");
+                printMatrix4x4(curMesh->transform->model);
+                print = 1;
             }
+
+            // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+            glDrawElements(GL_TRIANGLES, curMesh->num_indexes, GL_UNSIGNED_INT, 0);
+            glBindVertexArray(0);
+
+            // for (int i = 0; i < curMesh->num_objects; i ++) {
+            //     Object *obj = curMesh->objects[i];
+            //     matrix4x4 projectionMatrix = get_projection_matrix(r->height, r->width, 90.0f, 1000.0f, 0.1f);
+            //     VertexArray new_vertex = get_vertex_screen(obj, projectionMatrix, r->height, r->width);
+            //     if (new_vertex.rendered) {
+            //          glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+            //          glBufferSubData(GL_ARRAY_BUFFER, 0, obj->total_vertices * sizeof(Vertex), new_vertex.vertex);
+            //          glDrawArrays(GL_TRIANGLES, 0, obj->total_vertices);
+            //      }
+            //      free(new_vertex.vertex);
+            // }
 
         }
 

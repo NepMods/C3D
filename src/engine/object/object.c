@@ -91,6 +91,7 @@ VertexArray get_vertex_screen(Object *obj, matrix4x4 projection, int height, int
         vec3 color = color_with_luminance(vertex->color, dp_light);
 
         vec3d current_pos = multiplyMatrix4x4AndVec3(new_vertices[i].position, projection);
+
         new_vertices[i].position = (vec3){current_pos.x, current_pos.y, current_pos.z};
         new_vertices[i].color = color;
     }

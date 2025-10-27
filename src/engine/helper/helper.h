@@ -7,11 +7,11 @@
 
 #include "engine/vec3/vec3.h"
 #include "engine/vec2/vec2.h"
-#include "engine/matrix4x4/matrix4x4.h"
+#include "engine/core/matrix4x4/matrix4x4.h"
 #include "engine/object/object.h"
 #include "engine/vertex/vertex.h"
-
-matrix4x4 multiplyMatrix4x4(matrix4x4 m1, matrix4x4 m2);
+#define PI 3.14159265359f
+float deg2rad(float deg);
 vec3d multiplyMatrix4x4AndVec3(vec3 in, matrix4x4 matrix);
 matrix4x4 get_projection_matrix(int height, int width, float fov, float far, float near) ;
 
