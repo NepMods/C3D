@@ -9,7 +9,6 @@
 
 #include "engine/core/Camera/Camera.h"
 #include "engine/helper/helper.h"
-#include "engine/object/object.h"
 
 #include "glad/glad.h"
 
@@ -41,6 +40,9 @@ Renderer *get_main_renderer() {
 }
 
 Renderer *__create_renderer() {
+    /*
+     *  SET UP BASIC RENDERER
+     */
     Renderer *r = (Renderer *) malloc(sizeof(Renderer));
     r->width = 0;
     r->height = 0;
@@ -116,16 +118,20 @@ Renderer *init_renderer(int height, int width, char *title) {
     // --------------------------
     // VAO/VBO setup
     // --------------------------
-
     glGenVertexArrays(1, &r->VAO);
     glGenBuffers(1, &r->VBO);
-    glBindVertexArray(r->VAO);
     glBindBuffer(GL_ARRAY_BUFFER, r->VBO);
     glBufferData(GL_ARRAY_BUFFER, 10240 * sizeof(Vertex), 0, GL_DYNAMIC_DRAW);
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
+
+    /*
+     * Shader Layout
+     */
+    glBindVertexArray(r->VAO);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, position));
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, color));
     glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(3 * sizeof(float)));
     glBindVertexArray(0);
 
     /*
@@ -148,19 +154,32 @@ void renderer_polling(Renderer *r) {
         if (glfwGetKey(r->window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
             glfwSetWindowShouldClose(r->window, 1);
 
+        /*
+         * GET MAIN CAMERA AND UPDATE IT FOR THIS FRAME
+         */
         Camera *camera = get_main();
         camera_update(camera);
 
+        /*
+         * CLEAR OPENGL SCREEN FOR THID FRAME
+         */
         glClearColor(0.1f,0.12f,0.15f,1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LESS);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        /*
+         *  SET DELTA TIME
+         */
         double time = glfwGetTime();
         double deltaTime = time - r->currentTime;
         r->currentTime = time;
         r->deltaTime = deltaTime;
+
+        /*
+         * USE SHADERS AND BIND BUFFERS AND UNIFORM
+         */
         glUseProgram(r->shaderProgram);
         r->modelLoc = glGetUniformLocation(r->shaderProgram, "model");
         r->viewLoc = glGetUniformLocation(r->shaderProgram, "view");
@@ -168,47 +187,34 @@ void renderer_polling(Renderer *r) {
         glBindVertexArray(r->VAO);
         glBindBuffer(GL_ARRAY_BUFFER, r->VBO);
 
-
-
+        /*
+         * UPLOAD VIEW AND PROJECTION MATRIX FOR ALL MESHES,
+         * SINCE CAMERA POSITION FOR THIS FRAME IS ALREADY CALCULATED
+         */
         glUniformMatrix4fv(r->viewLoc, 1, GL_TRUE, (float *)camera->view.a);
         glUniformMatrix4fv(r->projLoc, 1, GL_TRUE, (float *)camera->projection.a);
-        if (!print) {
-            printf("View Matrix: \n");
-            printMatrix4x4(camera->view);
 
-            printf("Projection Matrix: \n");
-            printMatrix4x4(camera->projection);
-        }
+
         for (int i = 0; i < r->currentScene->totalObjects; i++) {
+            /*
+             * Upload mesh if not uploaded, and update it
+             */
             Mesh *curMesh =  r->currentScene->objects[i];
+            upload_mesh(curMesh);
             curMesh->update(curMesh, r->deltaTime);
 
-            glClear(GL_COLOR_BUFFER_BIT);
+            /*
+             * BIND OPENGL VAO, AND SEND MODEL TRANSFORM MATRIX
+             */
             glBindVertexArray(curMesh->VAO);
-
             glUniformMatrix4fv(r->modelLoc, 1, GL_TRUE, (float *)curMesh->transform->model.a);
-            if (!print) {
 
-                printf("Model Matrix: \n");
-                printMatrix4x4(curMesh->transform->model);
-                print = 1;
-            }
-
-            // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-            glDrawElements(GL_TRIANGLES, curMesh->num_indexes, GL_UNSIGNED_INT, 0);
+            /*
+             *  DRAW THE MESH
+             */
+            // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); // DEBUG ONLY
+            glDrawElements(GL_TRIANGLES, curMesh->vertices->index_count, GL_UNSIGNED_INT, 0);
             glBindVertexArray(0);
-
-            // for (int i = 0; i < curMesh->num_objects; i ++) {
-            //     Object *obj = curMesh->objects[i];
-            //     matrix4x4 projectionMatrix = get_projection_matrix(r->height, r->width, 90.0f, 1000.0f, 0.1f);
-            //     VertexArray new_vertex = get_vertex_screen(obj, projectionMatrix, r->height, r->width);
-            //     if (new_vertex.rendered) {
-            //          glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-            //          glBufferSubData(GL_ARRAY_BUFFER, 0, obj->total_vertices * sizeof(Vertex), new_vertex.vertex);
-            //          glDrawArrays(GL_TRIANGLES, 0, obj->total_vertices);
-            //      }
-            //      free(new_vertex.vertex);
-            // }
 
         }
 

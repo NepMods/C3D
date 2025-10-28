@@ -9,7 +9,7 @@
 
 
 vec3 vec2ToVec3(vec2 vector2) {
-    return (vec3){vector2.x, vector2.y, 1.0f};
+    return (vec3){vector2.x, vector2.y, 0.0f};
 }
 Color getColor() {
     Color c;
@@ -54,27 +54,27 @@ vec3 color_with_luminance(vec3 base_color, float lum) {
 
     return col;
 }
-void apply_luminance(Object *obj, float lum) {
-    if (!obj || obj->total_vertices <= 0) return;
-
-    for (int i = 0; i < obj->total_vertices; i++) {
-        Vertex *v = &obj->vertices[i];
-
-        // modulate each component by luminance
-        v->color.x *= lum;
-        v->color.y *= lum;
-        v->color.z *= lum;
-
-        // clamp to [0,1]
-        if (v->color.x > 1.0f) v->color.x = 1.0f;
-        if (v->color.y > 1.0f) v->color.y = 1.0f;
-        if (v->color.z > 1.0f) v->color.z = 1.0f;
-
-        if (v->color.x < 0.0f) v->color.x = 0.0f;
-        if (v->color.y < 0.0f) v->color.y = 0.0f;
-        if (v->color.z < 0.0f) v->color.z = 0.0f;
-    }
-}
+// void apply_luminance(Object *obj, float lum) {
+//     if (!obj || obj->total_vertices <= 0) return;
+//
+//     for (int i = 0; i < obj->total_vertices; i++) {
+//         Vertex *v = &obj->vertices[i];
+//
+//         // modulate each component by luminance
+//         v->color.x *= lum;
+//         v->color.y *= lum;
+//         v->color.z *= lum;
+//
+//         // clamp to [0,1]
+//         if (v->color.x > 1.0f) v->color.x = 1.0f;
+//         if (v->color.y > 1.0f) v->color.y = 1.0f;
+//         if (v->color.z > 1.0f) v->color.z = 1.0f;
+//
+//         if (v->color.x < 0.0f) v->color.x = 0.0f;
+//         if (v->color.y < 0.0f) v->color.y = 0.0f;
+//         if (v->color.z < 0.0f) v->color.z = 0.0f;
+//     }
+// }
 
 
 matrix4x4 get_projection_matrix(int height, int width, float fov, float far, float near) {
@@ -105,9 +105,9 @@ vec2 screen_to_ndc(float x, float y, float width, float height) {
     };
 }
 
-vec3 fromVertex(Vertex v) {
-    return v.position;
-}
+// vec3 fromVertex(Vertex v) {
+//     return v.position;
+// }
 
 vec3 fromVec3d(vec3d v) {
     return (vec3){v.x, v.y, v.z};

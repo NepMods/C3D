@@ -13,7 +13,6 @@
 #include "engine/Mesh/mesh.h"
 #include "engine/Rect/Rect.h"
 #include "engine/vec3/vec3.h"
-#include "engine/object/object.h"
 
 Renderer *renderer;
 double lastX = 0, lastY = 0;
@@ -26,117 +25,21 @@ float rotationSpeed = 1.0f;
 int invertYaw = 1;
 int invertPitch = 1;
 
-// Mesh *createBasicTriangle() {
-//     Triangle triangle = init_triangle((vec2){1.0f, 2.0f}, (vec2){0.0f, 0.0f}, (vec2){2.0f, 0.0f});
-//     Mesh *mesh = initialize_mesh();
-//     add_object(mesh,get_triangle_object_filled(triangle, (vec3 []){getColor().red}, 1) );
-//     return mesh;
-// }
+//
+void print_vertices(Vertices *vertices) {
+    printf("Vertices (count = %d):\n", vertices->vertex_count);
+    for (int i = 0; i < vertices->vertex_count; i++) {
+        // vec3 v = vertices->vertex[i];
+        // printf("  [%d] x: %.3f, y: %.3f, z: %.3f\n", i, v.x, v.y, v.z);
+    }
+}
 
-// Mesh *createBasicTriangle() {
-//     Triangle triangle = init_triangle((vec2){1.0f, 2.0f}, (vec2){0.0f, 0.0f}, (vec2){2.0f, 0.0f});
-//     return get_triangle_object_line(triangle, (vec3 []){getColor().red}, 1);
-// }
-//
-// Mesh *createBasicTriangle2() {
-//     Triangle triangle = init_triangle((vec2){1.0f, 2.0f}, (vec2){3.0f, 2.0f}, (vec2){2.0f, 0.0f});
-//     return get_triangle_object_line(triangle, (vec3 []){getColor().red}, 1);
-// }
-//
-// Mesh *createLine() {
-//     Line *line = init_line((vec3){0.0f, 0.0f, 1.0f}, (vec3){10.0f, 10.0f, 1.0f});
-//     return get_line_mesh(line);
-// }
-
-// typedef struct {
-//     vec3d *base_positions;
-//     int count;
-// } MeshRotationData;
-//
-// void rotateCube3d(void *mesh_p, double time) {
-//     Mesh *mesh = (Mesh *)mesh_p;
-//     if (!mesh) return;
-//
-//     double autoAngle = 0.0;
-//
-//     matrix4x4 rotZMat = rotZ(autoAngle);
-//     matrix4x4 rotXMat = rotX(autoAngle * 0.5);
-//
-//     // Mouse rotation still applied if mouse moved
-//     matrix4x4 mouseYRot = rotY(mouseMoved ? yaw * (M_PI / 180.0) : 0);
-//     matrix4x4 mouseXRot = rotX(mouseMoved ? pitch * (M_PI / 180.0) : 0);
-//
-//     matrix4x4 combined = multiplyMatrix4x4(mouseYRot, mouseXRot);
-//     combined = multiplyMatrix4x4(combined, rotZMat);
-//     combined = multiplyMatrix4x4(combined, rotXMat);
-//
-//     vec3 center = {0.5f, 0.5f, 0.5f};
-//
-//     for (int i = 0; i < mesh->num_objects; i++) {
-//         Object *obj = mesh->objects[i];
-//         for (int j = 0; j < obj->total_vertices; j++) {
-//             vec3 pos = obj->vertices[j].position;
-//             pos.x -= center.x;
-//             pos.y -= center.y;
-//             pos.z -= center.z;
-//
-//             vec3d rotated = multiplyMatrix4x4AndVec3(pos, combined);
-//
-//             obj->vertices[j].position.x = rotated.x + center.x;
-//             obj->vertices[j].position.y = rotated.y + center.y;
-//             obj->vertices[j].position.z = rotated.z + center.z;
-//         }
-//     }
-// }
-
-// Mesh *get3dCube() {
-//     Mesh *cube = initialize_mesh();
-//
-//     Color colors = getColor(); // Avoid calling repeatedly
-//
-//     // FRONT (Z = 0)
-//     Mesh *front = get_rect_mesh(
-//         init_rect(Vec3(0, 0, 0), Vec3(0, 1, 0), Vec3(1, 1, 0), Vec3(1, 0, 0)),
-//         (vec3[]){colors.green}, 1);
-//     add_objects(cube, front->objects, front->num_objects);
-//
-//     // LEFT (X = 0)
-//     Mesh *left = get_rect_mesh(
-//         init_rect(Vec3(0, 0, 1), Vec3(0, 1, 1), Vec3(0, 1, 0), Vec3(0, 0, 0)),
-//         (vec3[]){colors.cyan}, 1);
-//     add_objects(cube, left->objects, left->num_objects);
-//
-//     // BACK (Z = 1)
-//     Mesh *back = get_rect_mesh(
-//         init_rect(Vec3(1, 0, 1), Vec3(1, 1, 1), Vec3(0, 1, 1), Vec3(0, 0, 1)),
-//         (vec3[]){colors.orange}, 1);
-//     add_objects(cube, back->objects, back->num_objects);
-//
-//     // RIGHT (X = 1)
-//     Mesh *right = get_rect_mesh(
-//         init_rect(Vec3(1, 0, 0), Vec3(1, 1, 0), Vec3(1, 1, 1), Vec3(1, 0, 1)),
-//         (vec3[]){colors.white}, 1);
-//     add_objects(cube, right->objects, right->num_objects);
-//
-//     // TOP (Y = 1)
-//     Mesh *top = get_rect_mesh(
-//         init_rect(Vec3(0, 1, 0), Vec3(0, 1, 1), Vec3(1, 1, 1), Vec3(1, 1, 0)),
-//         (vec3[]){colors.red}, 1);
-//     add_objects(cube, top->objects, top->num_objects);
-//
-//     // BOTTOM (Y = 0)
-//     Mesh *bottom = get_rect_mesh(
-//         init_rect(Vec3(0, 0, 1), Vec3(0, 0, 0), Vec3(1, 0, 0), Vec3(1, 0, 1)),
-//         (vec3[]){colors.blue}, 1);
-//     add_objects(cube, bottom->objects, bottom->num_objects);
-//
-//     // Rotation hook
-//     on_update_mesh(cube, rotateCube3d);
-//
-//
-//
-//     return cube;
-// }
+void print_indices(Vertices *vertices) {
+    printf("Indices (count = %d):\n", vertices->index_count);
+    for (int i = 0; i < vertices->index_count; i++) {
+        printf("  [%d] %d\n", i, vertices->indices[i]);
+    }
+}
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
     if (firstMouse) {
@@ -174,59 +77,121 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
     normalizeVec3(&front);
     copyVec3(&renderer->cameraFront, &front);
 }
-
-// Mesh* get_Ship() {
-//     Mesh *ship = load_from_file("../VideoShip.obj");
-//     if (!ship) {
-//         perror("Failed to load Mesh from file");
-//         exit(-1);
-//     }
-//     on_update_mesh(ship, rotateCube3d);
-//     return  ship;
-// }
-//
-// Mesh* getTeapot() {
-//     Mesh *ship = load_from_file("../teapot.obj");
-//     if (!ship) {
-//         perror("Failed to load Mesh from file");
-//         exit(-1);
-//     }
-//     on_update_mesh(ship, rotateCube3d);
-//     return  ship;
-// }
-//
-// Mesh* getAxis() {
-//     Mesh *ship = load_from_file("../axis.obj");
-//     if (!ship) {
-//         perror("Failed to load Mesh from file");
-//         exit(-1);
-//     }
-//     on_update_mesh(ship, rotateCube3d);
-//     return  ship;
-// }
 void rotate_triangle(void *mesh_p, double deltaTime) {
     Mesh *mesh = (Mesh *)mesh_p;
     mesh->transform->rotation.y += 1.0f * deltaTime;
+
     // transform_update(mesh->transform);
 }
-Mesh *basic_triangle() {
-    // 3 vertices of a single triangle, centered at origin
-    float vertices[] = {
-        -0.5f, -0.5f,  0.0f,  // bottom-left
-         0.5f, -0.5f,  0.0f,  // bottom-right
-         0.0f,  0.5f,  0.0f   // top-center
+Mesh* get_Ship() {
+    Mesh *ship = load_from_file("../VideoShip.obj");
+    if (!ship) {
+        perror("Failed to load Mesh from file");
+        exit(-1);
+    }
+    on_update_mesh(ship, rotate_triangle);
+
+    // on_update_mesh(ship, rotateCube3d);
+    return  ship;
+}
+
+Mesh* getTeapot() {
+    Mesh *ship = load_from_file("../teapot.obj");
+    if (!ship) {
+        perror("Failed to load Mesh from file");
+        exit(-1);
+    }
+    on_update_mesh(ship, rotate_triangle);
+    return  ship;
+}
+
+Mesh* getAxis() {
+    Mesh *ship = load_from_file("../axis.obj");
+    if (!ship) {
+        perror("Failed to load Mesh from file");
+        exit(-1);
+    }
+    on_update_mesh(ship, rotate_triangle);
+    return  ship;
+}
+
+
+Mesh *get3dCube() {
+    Color color = getColor();
+
+    Mesh *mesh = initialize_mesh();
+    add_vertex(mesh->vertices, initialize_vertex(Vec3(-1.0f, -1.0f, -1.0f), color.red));
+    add_vertex(mesh->vertices, initialize_vertex(Vec3(1.0f, -1.0f, -1.0f), color.red));
+    add_vertex(mesh->vertices, initialize_vertex(Vec3(1.0f,  1.0f, -1.0f), color.red));
+    add_vertex(mesh->vertices, initialize_vertex(Vec3(-1.0f,  1.0f, -1.0f), color.red));
+    add_vertex(mesh->vertices, initialize_vertex(Vec3(-1.0f, -1.0f,  1.0f), color.red));
+    add_vertex(mesh->vertices, initialize_vertex(Vec3(1.0f, -1.0f,  1.0f), color.red));
+    add_vertex(mesh->vertices, initialize_vertex(Vec3(1.0f,  1.0f,  1.0f), color.red));
+    add_vertex(mesh->vertices, initialize_vertex(Vec3(-1.0f,  1.0f,  1.0f), color.red));
+    add_vertex(mesh->vertices, initialize_vertex(Vec3(-1.0f,  1.0f,  1.0f), color.red));
+
+    int cube_indices[36] = {
+        // back face
+        0, 1, 2,  2, 3, 0,
+
+        // front face
+        4, 5, 6,  6, 7, 4,
+
+        // left face
+        0, 3, 7,  7, 4, 0,
+
+        // right face
+        1, 5, 6,  6, 2, 1,
+
+        // bottom face
+        0, 1, 5,  5, 4, 0,
+
+        // top face
+        3, 2, 6,  6, 7, 3
     };
 
-    // Indices for one triangle
-    int indices[] = {
-        0, 1, 2
-    };
+    add_indices(mesh->vertices, cube_indices, 36, 3);
 
 
-    // Create mesh
-    Mesh *mesh = from_raw(vertices, sizeof(vertices), indices, sizeof(indices)/sizeof(int));
-    rotate_triangle(mesh, 0.5f);
     upload_mesh(mesh);
+    on_update_mesh(mesh, rotate_triangle);
+    return mesh;
+}
+
+
+
+Mesh *old_get3dCube() {
+    Mesh *cube = initialize_mesh();
+
+    // FRONT (Z = 0)
+    calculate_rect_vertices(init_rect(Vec3(0, 0, 0), Vec3(0, 1, 0), Vec3(1, 1, 0), Vec3(1, 0, 0)), cube->vertices);
+
+    // // LEFT (X = 0)
+    calculate_rect_vertices(init_rect(Vec3(0, 0, 1), Vec3(0, 1, 1), Vec3(0, 1, 0), Vec3(0, 0, 0)), cube->vertices);
+
+    // BACK (Z = 1)
+    calculate_rect_vertices(init_rect(Vec3(1, 0, 1), Vec3(1, 1, 1), Vec3(0, 1, 1), Vec3(0, 0, 1)), cube->vertices);
+
+    // RIGHT (X = 1)
+    calculate_rect_vertices(init_rect(Vec3(1, 0, 0), Vec3(1, 1, 0), Vec3(1, 1, 1), Vec3(1, 0, 1)), cube->vertices);
+
+    // TOP (Y = 1)
+    calculate_rect_vertices(init_rect(Vec3(0, 1, 0), Vec3(0, 1, 1), Vec3(1, 1, 1), Vec3(1, 1, 0)), cube->vertices);
+
+    // BOTTOM (Y = 0)
+    calculate_rect_vertices(init_rect(Vec3(0, 0, 1), Vec3(0, 0, 0), Vec3(1, 0, 0), Vec3(1, 0, 1)), cube->vertices);
+
+    // Rotation hook
+    on_update_mesh(cube, rotate_triangle);
+
+    return cube;
+}
+
+
+Mesh *basic_triangle() {
+    Mesh *mesh = initialize_mesh();
+    Triangle triangle = init_triangle((vec2){0, 0}, (vec2){0, 1}, (vec2){2, 0}) ;
+    calculate_triangle_vertices(triangle, mesh->vertices);
     on_update_mesh(mesh, rotate_triangle);
     return mesh;
 }
@@ -239,10 +204,14 @@ int main(void) {
 
     renderer = get_main_renderer();
     renderer->currentScene = scene;
-    add_mesh(scene, basic_triangle());
+    add_mesh(scene, get3dCube());
 
-    // glfwSetCursorPosCallback(renderer->window, mouse_callback);
-    // glfwSetInputMode(renderer->window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+
+    // print_vertices(ship->vertices);
+    // print_indices(ship->vertices);
+    glfwSetCursorPosCallback(renderer->window, mouse_callback);
+    glfwSetInputMode(renderer->window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     renderer_polling(renderer);
     destroy_renderer(renderer);

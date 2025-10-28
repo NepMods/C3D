@@ -4,7 +4,6 @@
 #include "scene.h"
 #include <stdlib.h>
 #include <string.h>
-#include "engine/object/object.h"
 
 Scene *initialize_scene() {
     Scene *scene = malloc(sizeof(Scene));
@@ -13,7 +12,7 @@ Scene *initialize_scene() {
     return scene;
 }
 void add_mesh(Scene *scene, Mesh *mesh){
-    scene->objects = realloc(scene->objects, sizeof(Object) * (scene->totalObjects + 1));
+    scene->objects = realloc(scene->objects, sizeof(Mesh) * (scene->totalObjects + 1));
     if (!scene->objects) {
         scene->totalObjects = 0;
         return;
@@ -28,7 +27,7 @@ void remove_mesh(Scene *scene, Mesh *mesh) {
 
     int found_index = -1;
     for (int i = 0; i <scene->totalObjects; i++) {
-        if (memcmp(&scene->objects[i], mesh, sizeof(Object)) == 0) {
+        if (memcmp(&scene->objects[i], mesh, sizeof(Mesh)) == 0) {
             found_index = i;
             break;
         }
@@ -39,8 +38,8 @@ void remove_mesh(Scene *scene, Mesh *mesh) {
     }
 
    scene->totalObjects--;
-    if (mesh->num_indexes > 0) {
-        scene->objects = realloc(scene->objects, sizeof(Object) *scene->totalObjects);
+    if (mesh->vertices->vertex_count > 0) {
+        scene->objects = realloc(scene->objects, sizeof(Mesh) *scene->totalObjects);
     } else {
         free(scene->objects);
         scene->objects = NULL;
