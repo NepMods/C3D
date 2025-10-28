@@ -1,7 +1,16 @@
 #version 330 core
-in vec3 vColor;
-out vec4 FragColor;
 
+uniform vec3 lightDir;
+uniform vec3 lightColor;
+
+in vec4 cColor;
+in vec3 FragPos;
+in vec3 Normal;
+
+out vec4 FragColor;
 void main(){
-    FragColor = vec4(vColor,1.0);
+       vec3 norm = normalize(Normal);
+        float diff = max(dot(norm, -normalize(lightDir)), 0.0);
+        vec3 color = diff * lightColor;
+        FragColor = vec4(color, 1.0);
 }

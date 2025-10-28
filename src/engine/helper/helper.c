@@ -9,7 +9,7 @@
 
 
 vec3 vec2ToVec3(vec2 vector2) {
-    return (vec3){vector2.x, vector2.y, 1.0f};
+    return (vec3){vector2.x, vector2.y, 0.0f};
 }
 Color getColor() {
     Color c;
@@ -32,42 +32,11 @@ Color getColor() {
 }
 
 
-vec3d multiplyMatrix4x4AndVec3(vec3 in, matrix4x4 m) {
-    vec3d out = {0};
-    // in.z +=3 ;
-    out.x = in.x * m.a[0][0] + in.y * m.a[1][0] + in.z * m.a[2][0] + m.a[3][0];
-    out.y = in.x * m.a[0][1] + in.y * m.a[1][1] + in.z * m.a[2][1] + m.a[3][1];
-    out.z = in.x * m.a[0][2] + in.y * m.a[1][2] + in.z * m.a[2][2] + m.a[3][2];
-    out.w = in.x * m.a[0][3] + in.y * m.a[1][3] + in.z * m.a[2][3] + m.a[3][3];
 
-
-    // printf("out mat4xt: {%.2f, %.2f, %.2f, %.2f}\n", out.x, out.y, out.z, out.w);
-
-    if (out.w != 0.0f) {
-        out.x /= out.w;
-        out.y /= out.w;
-        out.z /= out.w;
-
-    }
-
-    return out;
+float deg2rad(float deg)  {
+    return deg * (PI / 180.0f);
 }
 
-matrix4x4 multiplyMatrix4x4(matrix4x4 m1, matrix4x4 m2) {
-    matrix4x4 result = {0};
-
-    for (int i = 0; i < 4; i++) {
-        for (int j = 0; j < 4; j++) {
-            result.a[i][j] =
-                m1.a[i][0] * m2.a[0][j] +
-                m1.a[i][1] * m2.a[1][j] +
-                m1.a[i][2] * m2.a[2][j] +
-                m1.a[i][3] * m2.a[3][j];
-        }
-    }
-
-    return result;
-}
 vec3 color_with_luminance(vec3 base_color, float lum) {
     vec3 col;
     col.x = base_color.x * lum;
@@ -85,27 +54,27 @@ vec3 color_with_luminance(vec3 base_color, float lum) {
 
     return col;
 }
-void apply_luminance(Object *obj, float lum) {
-    if (!obj || obj->total_vertices <= 0) return;
-
-    for (int i = 0; i < obj->total_vertices; i++) {
-        Vertex *v = &obj->vertices[i];
-
-        // modulate each component by luminance
-        v->color.x *= lum;
-        v->color.y *= lum;
-        v->color.z *= lum;
-
-        // clamp to [0,1]
-        if (v->color.x > 1.0f) v->color.x = 1.0f;
-        if (v->color.y > 1.0f) v->color.y = 1.0f;
-        if (v->color.z > 1.0f) v->color.z = 1.0f;
-
-        if (v->color.x < 0.0f) v->color.x = 0.0f;
-        if (v->color.y < 0.0f) v->color.y = 0.0f;
-        if (v->color.z < 0.0f) v->color.z = 0.0f;
-    }
-}
+// void apply_luminance(Object *obj, float lum) {
+//     if (!obj || obj->total_vertices <= 0) return;
+//
+//     for (int i = 0; i < obj->total_vertices; i++) {
+//         Vertex *v = &obj->vertices[i];
+//
+//         // modulate each component by luminance
+//         v->color.x *= lum;
+//         v->color.y *= lum;
+//         v->color.z *= lum;
+//
+//         // clamp to [0,1]
+//         if (v->color.x > 1.0f) v->color.x = 1.0f;
+//         if (v->color.y > 1.0f) v->color.y = 1.0f;
+//         if (v->color.z > 1.0f) v->color.z = 1.0f;
+//
+//         if (v->color.x < 0.0f) v->color.x = 0.0f;
+//         if (v->color.y < 0.0f) v->color.y = 0.0f;
+//         if (v->color.z < 0.0f) v->color.z = 0.0f;
+//     }
+// }
 
 
 matrix4x4 get_projection_matrix(int height, int width, float fov, float far, float near) {
@@ -136,9 +105,9 @@ vec2 screen_to_ndc(float x, float y, float width, float height) {
     };
 }
 
-vec3 fromVertex(Vertex v) {
-    return v.position;
-}
+// vec3 fromVertex(Vertex v) {
+//     return v.position;
+// }
 
 vec3 fromVec3d(vec3d v) {
     return (vec3){v.x, v.y, v.z};

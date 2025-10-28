@@ -7,10 +7,11 @@ SRC = src/main.c \
 	  src/engine/core/renderer/renderer.c \
 	  src/engine/core/shader/shader.c \
 	  src/engine/core/scene/scene.c \
-	  src/engine/matrix4x4/matrix4x4.c \
+	  src/engine/core/matrix4x4/matrix4x4.c \
+	  src/engine/core/transform/transform.c \
+	  src/engine/core/Camera/Camera.c \
 	  src/engine/vec3/vec3.c \
-	  src/engine/object/object.c \
-      src/engine/vertex/vertex.c \
+      src/engine/core/vertex/vertex.c \
       src/engine/triangle/Triangle.c \
       src/engine/helper/helper.c \
       src/engine/Mesh/mesh.c \

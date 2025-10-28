@@ -12,11 +12,7 @@ Rect* init_rect(vec3 p1, vec3 p2, vec3 p3, vec3 p4) {
     r->s2 = init_triangle_3(p3, p4, p1);
     return r;
 }
-Mesh* get_rect_mesh(Rect* r, vec3 *colors, int num_colors) {
-    Mesh* rect = initialize_mesh();
-    Object *side1 = get_triangle_object_filled(r->s1, colors, num_colors);
-    Object *side2 = get_triangle_object_filled(r->s2, colors, num_colors);
-    add_object(rect, side1);
-    add_object(rect, side2);
-    return rect;
+void calculate_rect_vertices(Rect* r, Vertices *vertices) {
+    calculate_triangle_vertices(r->s1, vertices);
+    calculate_triangle_vertices(r->s2, vertices);
 }
