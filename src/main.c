@@ -25,21 +25,7 @@ float rotationSpeed = 1.0f;
 int invertYaw = 1;
 int invertPitch = 1;
 
-//
-void print_vertices(Vertices *vertices) {
-    printf("Vertices (count = %d):\n", vertices->vertex_count);
-    for (int i = 0; i < vertices->vertex_count; i++) {
-        // vec3 v = vertices->vertex[i];
-        // printf("  [%d] x: %.3f, y: %.3f, z: %.3f\n", i, v.x, v.y, v.z);
-    }
-}
 
-void print_indices(Vertices *vertices) {
-    printf("Indices (count = %d):\n", vertices->index_count);
-    for (int i = 0; i < vertices->index_count; i++) {
-        printf("  [%d] %d\n", i, vertices->indices[i]);
-    }
-}
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
     if (firstMouse) {
@@ -116,48 +102,6 @@ Mesh* getAxis() {
 }
 
 
-Mesh *get3dCube() {
-    Color color = getColor();
-
-    Mesh *mesh = initialize_mesh();
-    add_vertex(mesh->vertices, initialize_vertex(Vec3(-1.0f, -1.0f, -1.0f), color.red));
-    add_vertex(mesh->vertices, initialize_vertex(Vec3(1.0f, -1.0f, -1.0f), color.red));
-    add_vertex(mesh->vertices, initialize_vertex(Vec3(1.0f,  1.0f, -1.0f), color.red));
-    add_vertex(mesh->vertices, initialize_vertex(Vec3(-1.0f,  1.0f, -1.0f), color.red));
-    add_vertex(mesh->vertices, initialize_vertex(Vec3(-1.0f, -1.0f,  1.0f), color.red));
-    add_vertex(mesh->vertices, initialize_vertex(Vec3(1.0f, -1.0f,  1.0f), color.red));
-    add_vertex(mesh->vertices, initialize_vertex(Vec3(1.0f,  1.0f,  1.0f), color.red));
-    add_vertex(mesh->vertices, initialize_vertex(Vec3(-1.0f,  1.0f,  1.0f), color.red));
-    add_vertex(mesh->vertices, initialize_vertex(Vec3(-1.0f,  1.0f,  1.0f), color.red));
-
-    int cube_indices[36] = {
-        // back face
-        0, 1, 2,  2, 3, 0,
-
-        // front face
-        4, 5, 6,  6, 7, 4,
-
-        // left face
-        0, 3, 7,  7, 4, 0,
-
-        // right face
-        1, 5, 6,  6, 2, 1,
-
-        // bottom face
-        0, 1, 5,  5, 4, 0,
-
-        // top face
-        3, 2, 6,  6, 7, 3
-    };
-
-    add_indices(mesh->vertices, cube_indices, 36, 3);
-
-
-    upload_mesh(mesh);
-    on_update_mesh(mesh, rotate_triangle);
-    return mesh;
-}
-
 
 
 Mesh *old_get3dCube() {
@@ -204,14 +148,11 @@ int main(void) {
 
     renderer = get_main_renderer();
     renderer->currentScene = scene;
-    add_mesh(scene, get3dCube());
+    add_mesh(scene, get_Ship());
 
 
-
-    // print_vertices(ship->vertices);
-    // print_indices(ship->vertices);
-    glfwSetCursorPosCallback(renderer->window, mouse_callback);
-    glfwSetInputMode(renderer->window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    // glfwSetCursorPosCallback(renderer->window, mouse_callback);
+    // glfwSetInputMode(renderer->window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     renderer_polling(renderer);
     destroy_renderer(renderer);

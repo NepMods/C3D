@@ -52,6 +52,11 @@ Renderer *__create_renderer() {
     r->VAO = -1;
     r->VBO = -1;
     r->cameraFront = (vec3){0.0f, 0.0f, -1.0f};
+
+    r->mainLight = malloc(sizeof(Light));
+    r->mainLight->direction = (vec3){0.0f, -1.0f, -1.0f};
+    r->mainLight->color = (vec3){0.0f, 0.0f, 1.0f};
+
     return r;
 }
 
@@ -132,6 +137,8 @@ Renderer *init_renderer(int height, int width, char *title) {
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, color));
     glEnableVertexAttribArray(1);
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal));
+    glEnableVertexAttribArray(2);
     glBindVertexArray(0);
 
     /*
@@ -184,6 +191,8 @@ void renderer_polling(Renderer *r) {
         r->modelLoc = glGetUniformLocation(r->shaderProgram, "model");
         r->viewLoc = glGetUniformLocation(r->shaderProgram, "view");
         r->projLoc = glGetUniformLocation(r->shaderProgram, "projection");
+        r->lightDirLoc = glGetUniformLocation(r->shaderProgram, "lightDir");
+        r->lightColorLoc = glGetUniformLocation(r->shaderProgram, "lightColor");
         glBindVertexArray(r->VAO);
         glBindBuffer(GL_ARRAY_BUFFER, r->VBO);
 
@@ -193,6 +202,13 @@ void renderer_polling(Renderer *r) {
          */
         glUniformMatrix4fv(r->viewLoc, 1, GL_TRUE, (float *)camera->view.a);
         glUniformMatrix4fv(r->projLoc, 1, GL_TRUE, (float *)camera->projection.a);
+
+        float dir[3] = { r->mainLight->direction.x, r->mainLight->direction.y, r->mainLight->direction.z };
+        glUniform3fv(r->lightDirLoc, 1, dir);
+
+
+        float col[3] = { r->mainLight->color.x, r->mainLight->color.y, r->mainLight->color.z };
+        glUniform3fv(r->lightColorLoc, 1, col);
 
 
         for (int i = 0; i < r->currentScene->totalObjects; i++) {

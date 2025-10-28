@@ -8,6 +8,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include "engine/core/scene/scene.h"
+#include "engine/core/Light/Light.h"
 typedef struct {
     int initialized;
 
@@ -20,9 +21,11 @@ typedef struct {
     double currentTime;
     double deltaTime;
 
+    Light *mainLight;
+
     int width, height;
     vec3 cameraFront;
-    GLint modelLoc, viewLoc, projLoc;
+    GLint modelLoc, viewLoc, projLoc, lightDirLoc, lightColorLoc;
 } Renderer;
 
 void setRendererWindowData(int height, int width, char *title);

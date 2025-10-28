@@ -56,6 +56,8 @@ void upload_mesh(Mesh *mesh) {
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, color));
         glEnableVertexAttribArray(1);
+        glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal));
+        glEnableVertexAttribArray(2);
         glBindVertexArray(0);
     }
 }
@@ -144,33 +146,39 @@ Mesh *load_from_file(char *filename) {
         perror("Failed to open file");
         return 0;
     }
-
     Mesh *mesh = initialize_mesh();
+    int total_vertices = 0;
+    vec3 *vertices = (vec3 *)malloc(sizeof(vec3) * 1);
     Color color = getColor();
 
-    char line[256];
+    char line[128];
     while (fgets(line, sizeof(line), f)) {
-        if (line[0] == '\0' || line[0] == '\n' || line[0] == '#')
+        if (line[0] == '\0' || line[0] == '\n')
             continue;
 
-        if (line[0] == 'v' && line[1] == ' ') {
-            float x, y, z;
-            if (sscanf(line, "v %f %f %f", &x, &y, &z) == 3) {
-                // add_vertex(mesh->vertices, Vec3(x, y, z));
+        if (line[0] == 'v') {
+            if (line[0] == 'v') {
+                float x, y, z;
+                if (sscanf(line, "v %f %f %f", &x, &y, &z) == 3) {
+                    vec3 *tmp = realloc(vertices, sizeof(vec3) * (total_vertices + 1));
+                    if (!tmp) { free(vertices); return NULL; }
+                    vertices = tmp;
+                    vertices[total_vertices++] = Vec3(x, y, z);
+                }
             }
         }
 
-        else if (line[0] == 'f' && line[1] == ' ') {
+        if (line[0] == 'f') {
             int f0, f1, f2;
-
-            if (sscanf(line, "f %d/%*d/%*d %d/%*d/%*d %d/%*d/%*d", &f0, &f1, &f2) == 3 ||
-                sscanf(line, "f %d//%*d %d//%*d %d//%*d", &f0, &f1, &f2) == 3 ||
-                sscanf(line, "f %d %d %d", &f0, &f1, &f2) == 3) {
-                    int triangle_indices[] = { f0 - 1, f1 - 1, f2 - 1 };
-                    add_indices(mesh->vertices, triangle_indices, 3, 3);
+            if (sscanf(line, "f %d %d %d", &f0, &f1, &f2) == 3) {
+                if (f0-1 < total_vertices && f1-1 < total_vertices && f2-1 < total_vertices) {
+                    Triangle tri = init_triangle_3(vertices[f0-1], vertices[f1-1], vertices[f2-1]);
+                    calculate_triangle_vertices(tri, mesh->vertices);
                 }
+            }
         }
     }
+
     fclose(f);
-    return mesh;
+    return mesh; // true
 }

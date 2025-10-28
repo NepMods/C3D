@@ -33,10 +33,10 @@ vec3 getNormalVector(Triangle t) {
     return normalized;
 }
 void calculate_triangle_vertices(Triangle t, Vertices *vertices) {
-    // int v1 = add_vertex(vertices, t.a);
-    // int v2 = add_vertex(vertices, t.b);
-    // int v3 = add_vertex(vertices, t.c);
-
-    // int indices[] = {v1, v2, v3};
-    // add_indices(vertices, indices, 3, 3);
+    vec3 normal = getNormalVector(t);
+    int v1 = add_vertex(vertices, initialize_vertex_with_normal(t.a, getColor().red, normal));
+    int v2 = add_vertex(vertices, initialize_vertex_with_normal(t.b, getColor().red, normal));
+    int v3 = add_vertex(vertices, initialize_vertex_with_normal(t.c, getColor().red, normal));
+    int indices[] = {v1, v2, v3};
+    add_indices(vertices, indices, 3, 3);
 }
