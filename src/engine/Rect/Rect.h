@@ -7,10 +7,10 @@
 #include "engine/triangle/Triangle.h"
 
 typedef struct {
-    Triangle s1;
-    Triangle s2;
+    struct Triangle s1;
+    struct Triangle s2;
 } Rect;
 
-Rect* init_rect(vec3 p1, vec3 p2, vec3 p3, vec3 p4);
-void calculate_rect_vertices(Rect* r, Vertices *vertices);
+Rect* init_rect(struct vec3 p1,struct  vec3 p2, struct vec3 p3, struct vec3 p4);
+void calculate_rect_vertices(Rect* r, struct  Vertices *vertices);
 #endif //C_3D_RENDERING_ENGINE_RECT_H
