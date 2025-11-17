@@ -9,6 +9,13 @@ Done:
 - Added Update Function Support for each object
 
 
+# Build
+
+```
+git clone --recursive https://github.com/NepMods/C3D
+make
+```
+
 # Architecture 
 ```
 [ vec2 ] -> {x, y}
