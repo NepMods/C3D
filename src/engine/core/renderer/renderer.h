@@ -21,17 +21,17 @@ typedef struct {
     double currentTime;
     double deltaTime;
 
-    Light *mainLight;
+    struct Light mainLight;
 
     int width, height;
-    vec3 cameraFront;
+    struct vec3 cameraFront;
     GLint modelLoc, viewLoc, projLoc, lightDirLoc, lightColorLoc;
 } Renderer;
 
 void setRendererWindowData(int height, int width, char *title);
 Renderer *get_main_renderer();
-Renderer *__create_renderer();
-Renderer *init_renderer(int height, int width, char *title);
+Renderer __create_renderer();
+Renderer init_renderer(int height, int width, char *title);
 void destroy_renderer(Renderer *renderer);
 
 void renderer_polling(Renderer *r);

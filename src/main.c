@@ -55,7 +55,7 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
     if (pitch > 89.0f) pitch = 89.0f;
     if (pitch < -89.0f) pitch = -89.0f;
 
-    vec3 front;
+    struct vec3 front;
     front.x = cos(yaw * M_PI / 180.0) * cos(pitch * M_PI / 180.0);
     front.y = sin(pitch * M_PI / 180.0);
     front.z = sin(yaw * M_PI / 180.0) * cos(pitch * M_PI / 180.0);
@@ -65,78 +65,68 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
 }
 void rotate_triangle(void *mesh_p, double deltaTime) {
     Mesh *mesh = (Mesh *)mesh_p;
-    mesh->transform->rotation.y += 1.0f * deltaTime;
+    mesh->transform.rotation.y += 1.0f * deltaTime;
 
     // transform_update(mesh->transform);
 }
-Mesh* get_Ship() {
-    Mesh *ship = load_from_file("../VideoShip.obj");
-    if (!ship) {
-        perror("Failed to load Mesh from file");
-        exit(-1);
-    }
-    on_update_mesh(ship, rotate_triangle);
+Mesh get_Ship() {
+    Mesh ship = load_from_file("../VideoShip.obj");
+
+    on_update_mesh(&ship, rotate_triangle);
 
     // on_update_mesh(ship, rotateCube3d);
     return  ship;
 }
 
-Mesh* getTeapot() {
-    Mesh *ship = load_from_file("../teapot.obj");
-    if (!ship) {
-        perror("Failed to load Mesh from file");
-        exit(-1);
-    }
-    on_update_mesh(ship, rotate_triangle);
+Mesh getTeapot() {
+    Mesh ship = load_from_file("../dragon.obj");
+    on_update_mesh(&ship, rotate_triangle);
     return  ship;
 }
 
-Mesh* getAxis() {
-    Mesh *ship = load_from_file("../axis.obj");
-    if (!ship) {
-        perror("Failed to load Mesh from file");
-        exit(-1);
-    }
-    on_update_mesh(ship, rotate_triangle);
+Mesh getAxis() {
+    Mesh ship = load_from_file("../axis.obj");
+
+    on_update_mesh(&ship, rotate_triangle);
     return  ship;
 }
 
 
 
 
-Mesh *old_get3dCube() {
-    Mesh *cube = initialize_mesh();
+Mesh old_get3dCube() {
+    Mesh cube = initialize_mesh();
 
     // FRONT (Z = 0)
-    calculate_rect_vertices(init_rect(Vec3(0, 0, 0), Vec3(0, 1, 0), Vec3(1, 1, 0), Vec3(1, 0, 0)), cube->vertices);
+    calculate_rect_vertices(init_rect(Vec3(0, 0, 0), Vec3(0, 1, 0), Vec3(1, 1, 0), Vec3(1, 0, 0)), &cube.vertices);
 
     // // LEFT (X = 0)
-    calculate_rect_vertices(init_rect(Vec3(0, 0, 1), Vec3(0, 1, 1), Vec3(0, 1, 0), Vec3(0, 0, 0)), cube->vertices);
+    calculate_rect_vertices(init_rect(Vec3(0, 0, 1), Vec3(0, 1, 1), Vec3(0, 1, 0), Vec3(0, 0, 0)), &cube.vertices);
 
     // BACK (Z = 1)
-    calculate_rect_vertices(init_rect(Vec3(1, 0, 1), Vec3(1, 1, 1), Vec3(0, 1, 1), Vec3(0, 0, 1)), cube->vertices);
+    calculate_rect_vertices(init_rect(Vec3(1, 0, 1), Vec3(1, 1, 1), Vec3(0, 1, 1), Vec3(0, 0, 1)), &cube.vertices);
 
     // RIGHT (X = 1)
-    calculate_rect_vertices(init_rect(Vec3(1, 0, 0), Vec3(1, 1, 0), Vec3(1, 1, 1), Vec3(1, 0, 1)), cube->vertices);
+    calculate_rect_vertices(init_rect(Vec3(1, 0, 0), Vec3(1, 1, 0), Vec3(1, 1, 1), Vec3(1, 0, 1)), &cube.vertices);
 
     // TOP (Y = 1)
-    calculate_rect_vertices(init_rect(Vec3(0, 1, 0), Vec3(0, 1, 1), Vec3(1, 1, 1), Vec3(1, 1, 0)), cube->vertices);
+    calculate_rect_vertices(init_rect(Vec3(0, 1, 0), Vec3(0, 1, 1), Vec3(1, 1, 1), Vec3(1, 1, 0)), &cube.vertices);
 
     // BOTTOM (Y = 0)
-    calculate_rect_vertices(init_rect(Vec3(0, 0, 1), Vec3(0, 0, 0), Vec3(1, 0, 0), Vec3(1, 0, 1)), cube->vertices);
+    calculate_rect_vertices(init_rect(Vec3(0, 0, 1), Vec3(0, 0, 0), Vec3(1, 0, 0), Vec3(1, 0, 1)), &cube.vertices);
 
     // Rotation hook
-    on_update_mesh(cube, rotate_triangle);
+    on_update_mesh(&cube, rotate_triangle);
 
     return cube;
 }
 
 
-Mesh *basic_triangle() {
-    Mesh *mesh = initialize_mesh();
-    Triangle triangle = init_triangle((vec2){0, 0}, (vec2){0, 1}, (vec2){2, 0}) ;
-    calculate_triangle_vertices(triangle, mesh->vertices);
-    on_update_mesh(mesh, rotate_triangle);
+Mesh basic_triangle() {
+    Mesh mesh = initialize_mesh();
+    struct Triangle triangle = init_triangle((struct vec2){0, 0}, (struct  vec2){0, 1}, ( struct vec2){2, 0}) ;
+    calculate_triangle_vertices(triangle, &mesh.vertices);
+    on_update_mesh(&mesh, rotate_triangle);
     return mesh;
 }
 
@@ -144,11 +134,14 @@ Mesh *basic_triangle() {
 int main(void) {
     setRendererWindowData(800, 800, "C3D Rendering Engine");
 
-    Scene *scene =(Scene *) malloc(sizeof(Scene));
+    Scene scene = initialize_scene();
 
     renderer = get_main_renderer();
-    renderer->currentScene = scene;
-    add_mesh(scene, get_Ship());
+    renderer->currentScene = &scene;
+    Mesh teapot = getTeapot();
+    add_mesh(&scene, teapot);
+    // print_vertices(&teapot.vertices);
+
 
 
     // glfwSetCursorPosCallback(renderer->window, mouse_callback);
@@ -156,7 +149,7 @@ int main(void) {
 
     renderer_polling(renderer);
     destroy_renderer(renderer);
-    free(scene);
+    // free(scene);
 
     return 0;
 }

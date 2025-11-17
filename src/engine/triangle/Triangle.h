@@ -12,12 +12,13 @@
 // #include "engine/vertex/vertex.h"
 
 
-typedef struct Triangle_t {
-    vec3 a, b, c;
-}Triangle;
+struct Triangle {
+    struct vec3 a, b, c;
+};
 
-Triangle init_triangle(vec2 a, vec2 b, vec2 c) ;
-Triangle init_triangle_3(vec3 a, vec3 b, vec3 c) ;
-vec3 getNormalVector(Triangle t);
-void calculate_triangle_vertices(Triangle t, Vertices *vertices);
+struct Triangle init_triangle(struct vec2 a, struct vec2 b, struct vec2 c) ;
+struct  Triangle init_triangle_3(struct vec3 a, struct vec3 b, struct vec3 c) ;
+struct vec3 getNormalVector(struct  Triangle t);
+void calculate_triangle_vertices(struct  Triangle t, struct Vertices *vertices);
+void print_triangle(const struct Triangle *t);
 #endif //C_3D_RENDERING_ENGINE_TRIANGLE_H

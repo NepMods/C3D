@@ -1,9 +1,11 @@
 CC = gcc
-CFLAGS = -Wall -std=c11 -Ilibs/glad/include -Isrc
+CFLAGS = -Wall -std=c11 -Ilibs/glad/include -Ilibs/ -Isrc
 LIBS = -lglfw -ldl -lm
 
 SRC = src/main.c \
 	  libs/glad/src/glad.c \
+	  libs/c_dynamic_array/cda.c \
+	  libs/c_dynamic_array/arena_alloc/arena.c \
 	  src/engine/core/renderer/renderer.c \
 	  src/engine/core/shader/shader.c \
 	  src/engine/core/scene/scene.c \

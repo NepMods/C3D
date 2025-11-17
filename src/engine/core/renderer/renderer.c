@@ -7,11 +7,11 @@
 #include <stdlib.h>
 #include <math.h>
 
+#include "c_dynamic_array/cda.h"
 #include "engine/core/Camera/Camera.h"
 #include "engine/helper/helper.h"
 
 #include "glad/glad.h"
-
 static void error_callback(int error, const char* description) {
     fprintf(stderr, "GLFW Error (%d): %s\n", error, description);
 }
@@ -23,7 +23,7 @@ static void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 int width = 800;
 int height = 800;
 char *title = "C3D";
-Renderer *main_renderer;
+Renderer main_renderer;
 
 void setRendererWindowData(int height_p, int width_p, char *title_p) {
     width = width_p;
@@ -31,31 +31,37 @@ void setRendererWindowData(int height_p, int width_p, char *title_p) {
     title = title_p;
 }
 Renderer *get_main_renderer() {
-    if (main_renderer) {
-        return main_renderer;
+
+    if (!main_renderer.initialized) {
+        main_renderer = init_renderer(height, width, "Hello World");
     }
 
-    main_renderer = init_renderer(height, width, "Hello World");
-    return main_renderer;
+    return &main_renderer;
 }
 
-Renderer *__create_renderer() {
+Renderer __create_renderer() {
     /*
      *  SET UP BASIC RENDERER
      */
-    Renderer *r = (Renderer *) malloc(sizeof(Renderer));
-    r->width = 0;
-    r->height = 0;
-    r->initialized = 0;
-    r->window = NULL;
-    r->shaderProgram = 1;
-    r->VAO = -1;
-    r->VBO = -1;
-    r->cameraFront = (vec3){0.0f, 0.0f, -1.0f};
-
-    r->mainLight = malloc(sizeof(Light));
-    r->mainLight->direction = (vec3){0.0f, -1.0f, -1.0f};
-    r->mainLight->color = (vec3){0.0f, 0.0f, 1.0f};
+    Renderer r;
+    r.width = 0;
+    r.height = 0;
+    r.initialized = 0;
+    r.window = NULL;
+    r.shaderProgram = 1;
+    r.VAO = -1;
+    r.VBO = -1;
+    r.cameraFront = init_vec3(0.0f, 0.0f, -1.0f);
+    r.currentScene = NULL;
+    r.currentTime = 0;
+    r.deltaTime = 0;
+    r.modelLoc = -1;
+    r.viewLoc = -1;
+    r.projLoc = -1;
+    r.lightDirLoc = -1;
+    r.lightColorLoc = -1;
+    r.mainLight.direction = (struct vec3){0.0f, -1.0f, -1.0f};
+    r.mainLight.color = (struct vec3){1.0f, 1.0f, 1.0f};
 
     return r;
 }
@@ -68,12 +74,12 @@ void destroy_renderer(Renderer *renderer) {
     glfwTerminate();
     free(renderer);
 }
-Renderer *init_renderer(int height, int width, char *title) {
+Renderer init_renderer(int height, int width, char *title) {
 
     /*
      * INITIALIZE THE Renderer
      */
-    Renderer *r = __create_renderer();
+    Renderer r = __create_renderer();
 
     /*
      * INITIALIZE OPENGL
@@ -97,11 +103,11 @@ Renderer *init_renderer(int height, int width, char *title) {
     /*
      * INITIALIZE OPENGL WINDOW
      */
-    r->window = glfwCreateWindow(width, height, title, NULL, NULL);
-    if (!r->window) { glfwTerminate(); return r; }
+    r.window = glfwCreateWindow(width, height, title, NULL, NULL);
+    if (!r.window) { glfwTerminate(); return r; }
 
-    glfwMakeContextCurrent(r->window);
-    glfwSetFramebufferSizeCallback(r->window, framebuffer_size_callback);
+    glfwMakeContextCurrent(r.window);
+    glfwSetFramebufferSizeCallback(r.window, framebuffer_size_callback);
 
     /*
      * INITIALIZE OPENGL RENDERER
@@ -109,35 +115,35 @@ Renderer *init_renderer(int height, int width, char *title) {
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
         fprintf(stderr, "Failed to initialize GLAD\n");
-        r->initialized = 0;
+        r.initialized = 0;
         return r;
     }
 
     /*
      * INITIALIZE SHADER PROGRAM AND COMPILE SHADERS
      */
-    r->shaderProgram = create_shader_program();
-    glUseProgram(r->shaderProgram);
+    r.shaderProgram = create_shader_program();
+    glUseProgram(r.shaderProgram);
 
 
     // --------------------------
     // VAO/VBO setup
     // --------------------------
-    glGenVertexArrays(1, &r->VAO);
-    glGenBuffers(1, &r->VBO);
-    glBindBuffer(GL_ARRAY_BUFFER, r->VBO);
-    glBufferData(GL_ARRAY_BUFFER, 10240 * sizeof(Vertex), 0, GL_DYNAMIC_DRAW);
+    glGenVertexArrays(1, &r.VAO);
+    glGenBuffers(1, &r.VBO);
+    glBindBuffer(GL_ARRAY_BUFFER, r.VBO);
+    glBufferData(GL_ARRAY_BUFFER, 10240 * sizeof(struct Vertex), 0, GL_DYNAMIC_DRAW);
     glEnableVertexAttribArray(0);
 
     /*
      * Shader Layout
      */
-    glBindVertexArray(r->VAO);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, position));
+    glBindVertexArray(r.VAO);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(struct Vertex), (void*)offsetof(struct Vertex, position));
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, color));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(struct Vertex), (void*)offsetof(struct Vertex, color));
     glEnableVertexAttribArray(1);
-    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal));
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(struct Vertex), (void*)offsetof(struct Vertex, normal));
     glEnableVertexAttribArray(2);
     glBindVertexArray(0);
 
@@ -145,11 +151,11 @@ Renderer *init_renderer(int height, int width, char *title) {
      * GET WINDOW SIZE
      */
     int width_win, height_win;
-    glfwGetWindowSize(r->window, &width_win, &height_win);
-    r->width = width_win;
-    r->height = height_win;
+    glfwGetWindowSize(r.window, &width_win, &height_win);
+    r.width = width_win;
+    r.height = height_win;
 
-    r->initialized = 1;
+    r.initialized = 1;
     return  r;
 }
 
@@ -203,11 +209,11 @@ void renderer_polling(Renderer *r) {
         glUniformMatrix4fv(r->viewLoc, 1, GL_TRUE, (float *)camera->view.a);
         glUniformMatrix4fv(r->projLoc, 1, GL_TRUE, (float *)camera->projection.a);
 
-        float dir[3] = { r->mainLight->direction.x, r->mainLight->direction.y, r->mainLight->direction.z };
+        float dir[3] = { r->mainLight.direction.x, r->mainLight.direction.y, r->mainLight.direction.z };
         glUniform3fv(r->lightDirLoc, 1, dir);
 
 
-        float col[3] = { r->mainLight->color.x, r->mainLight->color.y, r->mainLight->color.z };
+        float col[3] = { r->mainLight.color.x, r->mainLight.color.y, r->mainLight.color.z };
         glUniform3fv(r->lightColorLoc, 1, col);
 
 
@@ -215,7 +221,7 @@ void renderer_polling(Renderer *r) {
             /*
              * Upload mesh if not uploaded, and update it
              */
-            Mesh *curMesh =  r->currentScene->objects[i];
+            Mesh *curMesh = __array_get_ptr(&r->currentScene->objects, i);
             upload_mesh(curMesh);
             curMesh->update(curMesh, r->deltaTime);
 
@@ -223,13 +229,13 @@ void renderer_polling(Renderer *r) {
              * BIND OPENGL VAO, AND SEND MODEL TRANSFORM MATRIX
              */
             glBindVertexArray(curMesh->VAO);
-            glUniformMatrix4fv(r->modelLoc, 1, GL_TRUE, (float *)curMesh->transform->model.a);
+            glUniformMatrix4fv(r->modelLoc, 1, GL_TRUE, (float *)curMesh->transform.model.a);
 
             /*
              *  DRAW THE MESH
              */
             // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); // DEBUG ONLY
-            glDrawElements(GL_TRIANGLES, curMesh->vertices->index_count, GL_UNSIGNED_INT, 0);
+            glDrawElements(GL_TRIANGLES, curMesh->vertices.index_count, GL_UNSIGNED_INT, 0);
             glBindVertexArray(0);
 
         }

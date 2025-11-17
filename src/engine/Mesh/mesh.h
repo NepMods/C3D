@@ -14,9 +14,9 @@ typedef void (*update_function)(void *, double);
 
 
 typedef struct {
-    Transform *transform;
+    Transform transform;
 
-    Vertices *vertices;
+    struct Vertices vertices;
 
     GLuint VAO, VBO, EBO;
     int dynamic;
@@ -26,11 +26,11 @@ typedef struct {
     update_function customUpdate;
 } Mesh;
 
-Mesh *initialize_mesh();
-Mesh* from_raw(float *vertices, int num_vertices, int *indices, int num_indices);
+Mesh initialize_mesh();
+Mesh from_raw(float *vertices, int num_vertices, int *indices, int num_indices);
 void upload_mesh(Mesh *mesh);
 
 void on_update_mesh(Mesh *mesh, update_function function);
-Mesh *load_from_file(char *filename);
+Mesh load_from_file(char *filename);
 
 #endif //C_3D_RENDERING_ENGINE_MESH_H
